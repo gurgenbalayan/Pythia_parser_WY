@@ -25,6 +25,7 @@ async def generate_random_user_agent():
     ]
     return random.choice(browsers)
 async def fetch_company_details(url: str) -> dict:
+    driver = None
     try:
         options = webdriver.ChromeOptions()
         options.add_argument(f'--user-agent={await generate_random_user_agent()}')
@@ -71,13 +72,15 @@ async def fetch_company_details(url: str) -> dict:
              "#accordion2")))
         table = driver.find_element(By.CSS_SELECTOR, '#Form1 > section.content-holder.b-none.inner_content.inner_page > section > section > section > section.span9.panel2 > section > div > div.panel')
         html = table.get_attribute('outerHTML')
-        driver.quit()
         return await parse_html_details(html)
     except Exception as e:
-        driver.quit()
         logger.error(f"Error fetching data for url '{url}': {e}")
         return []
+    finally:
+        if driver:
+            driver.quit()
 async def fetch_company_data(query: str) -> list[dict]:
+    driver = None
     try:
         url = "https://wyobiz.wyo.gov/Business/FilingSearch.aspx"
         options = webdriver.ChromeOptions()
@@ -125,12 +128,13 @@ async def fetch_company_data(query: str) -> list[dict]:
             (By.CSS_SELECTOR, "#Ol1")))
         table = driver.find_element(By.CSS_SELECTOR,'#Ol1')
         html = table.get_attribute('outerHTML')
-        driver.quit()
         return await parse_html_search(html)
     except Exception as e:
-        driver.quit()
         logger.error(f"Error fetching data for query '{query}': {e}")
         return []
+    finally:
+        if driver:
+            driver.quit()
 
 async def parse_html_search(html: str) -> list[dict]:
     soup = BeautifulSoup(html, 'html.parser')
