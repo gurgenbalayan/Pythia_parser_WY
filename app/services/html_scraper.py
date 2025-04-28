@@ -3,14 +3,12 @@ from bs4 import BeautifulSoup
 from selenium.webdriver import Keys
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium import webdriver
-import undetected_chromedriver as uc
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from utils.logger import setup_logger
 import os
-from dotenv import load_dotenv
-load_dotenv()
 
+SELENIUM_REMOTE_URL = os.getenv("SELENIUM_REMOTE_URL")
 STATE = os.getenv("STATE")
 logger = setup_logger("scraper")
 
@@ -39,7 +37,10 @@ async def fetch_company_details(url: str) -> dict:
         options.add_argument("--disable-features=DnsOverHttps")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-blink-features=AutomationControlled")
-        driver = uc.Chrome(options=options)
+        driver = webdriver.Remote(
+            command_executor=SELENIUM_REMOTE_URL,
+            options=options
+        )
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                         const getContext = HTMLCanvasElement.prototype.getContext;
@@ -95,7 +96,10 @@ async def fetch_company_data(query: str) -> list[dict]:
         options.add_argument("--disable-features=DnsOverHttps")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-blink-features=AutomationControlled")
-        driver = uc.Chrome(options=options)
+        driver = webdriver.Remote(
+            command_executor=SELENIUM_REMOTE_URL,
+            options=options
+        )
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
             "source": """
                         const getContext = HTMLCanvasElement.prototype.getContext;
