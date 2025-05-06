@@ -1,5 +1,5 @@
 import random
-import time
+
 
 from bs4 import BeautifulSoup
 from selenium.webdriver import Keys
@@ -91,7 +91,6 @@ async def fetch_company_details(url: str) -> dict:
         if driver:
             driver.quit()
 async def fetch_company_data(query: str) -> list[dict]:
-    start_time = time.time()
     driver = None
     try:
         url = "https://wyobiz.wyo.gov/Business/FilingSearch.aspx"
@@ -152,10 +151,7 @@ async def fetch_company_data(query: str) -> list[dict]:
             (By.CSS_SELECTOR, "#Ol1")))
         table = driver.find_element(By.CSS_SELECTOR,'#Ol1')
         html = table.get_attribute('outerHTML')
-        test = await parse_html_search(html)
-        end_time = time.time()
-        print(f"Время выполнения: {end_time - start_time} секунд")
-        return test
+        return await parse_html_search(html)
     except Exception as e:
         logger.error(f"Error fetching data for query '{query}': {e}")
         return []
