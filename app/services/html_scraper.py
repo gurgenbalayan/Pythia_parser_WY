@@ -49,28 +49,7 @@ async def fetch_company_details(url: str) -> dict:
             command_executor=SELENIUM_REMOTE_URL,
             options=options
         )
-        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": """
-        #                 const getContext = HTMLCanvasElement.prototype.getContext;
-        #                 HTMLCanvasElement.prototype.getContext = function(type, attrs) {
-        #                     const ctx = getContext.apply(this, arguments);
-        #                     if (type === '2d') {
-        #                         const originalToDataURL = this.toDataURL;
-        #                         this.toDataURL = function() {
-        #                             return "data:image/png;base64,fake_canvas_fingerprint";
-        #                         };
-        #                     }
-        #                     return ctx;
-        #                 };
-        #                 """
-        # })
-        # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-        #     'source': '''
-        #             Object.defineProperty(navigator, 'webdriver', {
-        #               get: () => undefined
-        #             })
-        #           '''
-        # })
+        driver.set_page_load_timeout(30)
         driver.get(url)
         wait = WebDriverWait(driver, 15)  # Ожидаем до 15 секунд
         wait.until(EC.visibility_of_element_located(
@@ -116,28 +95,6 @@ async def fetch_company_data(query: str) -> list[dict]:
             command_executor=SELENIUM_REMOTE_URL,
             options=options
         )
-        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        #     "source": """
-        #                 const getContext = HTMLCanvasElement.prototype.getContext;
-        #                 HTMLCanvasElement.prototype.getContext = function(type, attrs) {
-        #                     const ctx = getContext.apply(this, arguments);
-        #                     if (type === '2d') {
-        #                         const originalToDataURL = this.toDataURL;
-        #                         this.toDataURL = function() {
-        #                             return "data:image/png;base64,fake_canvas_fingerprint";
-        #                         };
-        #                     }
-        #                     return ctx;
-        #                 };
-        #                 """
-        # })
-        # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-        #     'source': '''
-        #             Object.defineProperty(navigator, 'webdriver', {
-        #               get: () => undefined
-        #             })
-        #           '''
-        # })
         driver.set_page_load_timeout(30)
         driver.get(url)
         input_field = WebDriverWait(driver, 10).until(
