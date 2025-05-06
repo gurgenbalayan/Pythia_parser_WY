@@ -1,4 +1,6 @@
 import random
+import time
+
 from bs4 import BeautifulSoup
 from selenium.webdriver import Keys
 from selenium.webdriver.support.wait import WebDriverWait
@@ -27,7 +29,7 @@ async def fetch_company_details(url: str) -> dict:
     try:
         options = webdriver.ChromeOptions()
         options.add_argument(f'--user-agent={await generate_random_user_agent()}')
-        options.add_argument("--headless=new")
+        # options.add_argument("--headless=new")
         options.add_argument(f'--lang=en-US')
         options.add_argument("--start-maximized")
         options.add_argument("--disable-webrtc")
@@ -49,28 +51,28 @@ async def fetch_company_details(url: str) -> dict:
             command_executor=SELENIUM_REMOTE_URL,
             options=options
         )
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                        const getContext = HTMLCanvasElement.prototype.getContext;
-                        HTMLCanvasElement.prototype.getContext = function(type, attrs) {
-                            const ctx = getContext.apply(this, arguments);
-                            if (type === '2d') {
-                                const originalToDataURL = this.toDataURL;
-                                this.toDataURL = function() {
-                                    return "data:image/png;base64,fake_canvas_fingerprint";
-                                };
-                            }
-                            return ctx;
-                        };
-                        """
-        })
-        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-            'source': '''
-                    Object.defineProperty(navigator, 'webdriver', {
-                      get: () => undefined
-                    })
-                  '''
-        })
+        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #                 const getContext = HTMLCanvasElement.prototype.getContext;
+        #                 HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+        #                     const ctx = getContext.apply(this, arguments);
+        #                     if (type === '2d') {
+        #                         const originalToDataURL = this.toDataURL;
+        #                         this.toDataURL = function() {
+        #                             return "data:image/png;base64,fake_canvas_fingerprint";
+        #                         };
+        #                     }
+        #                     return ctx;
+        #                 };
+        #                 """
+        # })
+        # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+        #     'source': '''
+        #             Object.defineProperty(navigator, 'webdriver', {
+        #               get: () => undefined
+        #             })
+        #           '''
+        # })
         driver.get(url)
         wait = WebDriverWait(driver, 15)  # Ожидаем до 15 секунд
         wait.until(EC.visibility_of_element_located(
@@ -89,12 +91,13 @@ async def fetch_company_details(url: str) -> dict:
         if driver:
             driver.quit()
 async def fetch_company_data(query: str) -> list[dict]:
+    start_time = time.time()
     driver = None
     try:
         url = "https://wyobiz.wyo.gov/Business/FilingSearch.aspx"
         options = webdriver.ChromeOptions()
         options.add_argument(f'--user-agent={await generate_random_user_agent()}')
-        options.add_argument("--headless=new")
+        # options.add_argument("--headless=new")
         options.add_argument(f'--lang=en-US')
         options.add_argument("--start-maximized")
         options.add_argument("--disable-webrtc")
@@ -116,28 +119,29 @@ async def fetch_company_data(query: str) -> list[dict]:
             command_executor=SELENIUM_REMOTE_URL,
             options=options
         )
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                        const getContext = HTMLCanvasElement.prototype.getContext;
-                        HTMLCanvasElement.prototype.getContext = function(type, attrs) {
-                            const ctx = getContext.apply(this, arguments);
-                            if (type === '2d') {
-                                const originalToDataURL = this.toDataURL;
-                                this.toDataURL = function() {
-                                    return "data:image/png;base64,fake_canvas_fingerprint";
-                                };
-                            }
-                            return ctx;
-                        };
-                        """
-        })
-        driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
-            'source': '''
-                    Object.defineProperty(navigator, 'webdriver', {
-                      get: () => undefined
-                    })
-                  '''
-        })
+        # driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        #     "source": """
+        #                 const getContext = HTMLCanvasElement.prototype.getContext;
+        #                 HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+        #                     const ctx = getContext.apply(this, arguments);
+        #                     if (type === '2d') {
+        #                         const originalToDataURL = this.toDataURL;
+        #                         this.toDataURL = function() {
+        #                             return "data:image/png;base64,fake_canvas_fingerprint";
+        #                         };
+        #                     }
+        #                     return ctx;
+        #                 };
+        #                 """
+        # })
+        # driver.execute_cdp_cmd('Page.addScriptToEvaluateOnNewDocument', {
+        #     'source': '''
+        #             Object.defineProperty(navigator, 'webdriver', {
+        #               get: () => undefined
+        #             })
+        #           '''
+        # })
+        driver.set_page_load_timeout(30)
         driver.get(url)
         input_field = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "#MainContent_txtFilingName")))
@@ -148,7 +152,10 @@ async def fetch_company_data(query: str) -> list[dict]:
             (By.CSS_SELECTOR, "#Ol1")))
         table = driver.find_element(By.CSS_SELECTOR,'#Ol1')
         html = table.get_attribute('outerHTML')
-        return await parse_html_search(html)
+        test = await parse_html_search(html)
+        end_time = time.time()
+        print(f"Время выполнения: {end_time - start_time} секунд")
+        return test
     except Exception as e:
         logger.error(f"Error fetching data for query '{query}': {e}")
         return []
