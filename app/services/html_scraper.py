@@ -1,6 +1,4 @@
 import random
-
-
 from bs4 import BeautifulSoup
 from selenium.webdriver import Keys
 from selenium.webdriver.support.wait import WebDriverWait
